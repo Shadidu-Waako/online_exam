@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Set Exam</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="../css/styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
+
+  <div id="sidebarMenu" class="sidebar flex-column p-3">
+    <h4 class="text-center">OExams</h4>
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item">
+        <a href="instructor.html" class="nav-link active" aria-current="page">Home</a>
+      </li>
+      <li>
+        <a href="set_exam.html" class="nav-link">Set Exam</a>
+      </li>
+      <li>
+        <a href="view_exam.html" class="nav-link">View Exam</a>
+      </li>
+      <li>
+        <a href="results.html" class="nav-link">Results</a>
+      </li>
+    </ul>
+  </div>
+
+  <section>
+    <div class="content p-4 flex-grow-1">
+      <h1>Set An Exam For Your Students</h1>
+      <form>
+        <div class="mb-3">
+          <label for="questionType" class="form-label">Select Question Type</label>
+          <select class="form-select" id="questionType">
+            <option value="">--Select Question Type--</option>
+            <option value="objective">Objective</option>
+            <option value="short-answer">Short Answer</option>
+          </select>
+        </div>
+
+        <!-- Objective Question Options -->
+        <div id="objectiveQuestion" class="d-none">
+          <div class="mb-3">
+            <label for="questionText" class="form-label">Question</label>
+            <textarea class="form-control" id="questionText" rows="3"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="optionCount" class="form-label">Number of Options (2-5)</label>
+            <input type="number" class="form-control" id="optionCount" min="2" max="5" value="2">
+          </div>
+
+          <div id="optionsContainer">
+            <!-- Options will be dynamically generated here -->
+          </div>
+        </div>
+
+        <!-- Short Answer Question -->
+        <div id="shortAnswerQuestion" class="d-none">
+          <div class="mb-3">
+            <label for="shortAnswerText" class="form-label">Question</label>
+            <textarea class="form-control" id="shortAnswerText" rows="3"></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.querySelector('.navbar-toggler').addEventListener('click', function () {
+      const sidebar = document.getElementById('sidebarMenu');
+      sidebar.classList.toggle('show');
+    });
+
+    const questionType = document.getElementById('questionType');
+    const objectiveQuestion = document.getElementById('objectiveQuestion');
+    const shortAnswerQuestion = document.getElementById('shortAnswerQuestion');
+    const optionCount = document.getElementById('optionCount');
+    const optionsContainer = document.getElementById('optionsContainer');
+
+    // Listen to question type change
+    questionType.addEventListener('change', () => {
+      const selectedType = questionType.value;
+
+      // Toggle visibility of question types
+      objectiveQuestion.classList.toggle('d-none', selectedType !== 'objective');
+      shortAnswerQuestion.classList.toggle('d-none', selectedType !== 'short-answer');
+
+      // Trigger generation of options when selecting objective type
+      if (selectedType === 'objective') {
+        optionCount.dispatchEvent(new Event('input'));
+      }
+    });
+
+    // Listen to changes in the number of options
+    optionCount.addEventListener('input', () => {
+      const count = Math.min(Math.max(optionCount.value, 2), 5); // Clamp the value between 2 and 5
+      optionsContainer.innerHTML = '';
+
+      // Generate the specified number of options
+      for (let i = 1; i <= count; i++) {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'mb-3';
+        optionDiv.innerHTML = `
+          <label for="option${i}" class="form-label">Option ${i}</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="option${i}" placeholder="Enter option ${i}">
+            <div class="input-group-text">
+              <input type="radio" name="correctOption" value="${i}" aria-label="Correct option">
+            </div>
+          </div>
+        `;
+        optionsContainer.appendChild(optionDiv);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .sidebar {
+    min-width: 200px;
+    max-width: 250px;
+    background-color: #343a40;
+    color: white;
+    display: none; /* Default hidden on smaller screens */
+  }
+  .sidebar.show {
+    display: block; /* Show the sidebar when .show is added */
+  }
+  .sidebar a {
+    color: white;
+    text-decoration: none;
+  }
+  .sidebar a:hover {
+    background-color: #495057;
+    text-decoration: none;
+  }
+  @media (min-width: 769px) {
+    .sidebar {
+      display: flex; /* Always show on larger screens */
+      flex-direction: column;
+    }
+    .navbar-toggler {
+      display: none; /* Hide the hamburger menu on larger screens */
+    }
+  }
