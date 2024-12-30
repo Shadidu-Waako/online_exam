@@ -37,94 +37,245 @@
 
   <section>
     <div class="content p-4 flex-grow-1">
-      <h1>Set An Exam For Your Students</h1>
-      <form>
-        <div class="mb-3">
-          <label for="questionType" class="form-label">Select Question Type</label>
-          <select class="form-select" id="questionType">
-            <option value="">--Select Question Type--</option>
-            <option value="objective">Objective</option>
-            <option value="short-answer">Short Answer</option>
-          </select>
-        </div>
-
-        <!-- Objective Question Options -->
-        <div id="objectiveQuestion" class="d-none">
+        <h1>Set Exam Details</h1>
+        <form id="examDetailsForm">
           <div class="mb-3">
-            <label for="questionText" class="form-label">Question</label>
-            <textarea class="form-control" id="questionText" rows="3"></textarea>
+            <label for="examTitle" class="form-label">Exam Title</label>
+            <input type="text" class="form-control" id="examTitle" placeholder="Enter exam title">
           </div>
-
+  
           <div class="mb-3">
-            <label for="optionCount" class="form-label">Number of Options (2-5)</label>
-            <input type="number" class="form-control" id="optionCount" min="2" max="5" value="2">
+            <label for="examDuration" class="form-label">Exam Duration (minutes)</label>
+            <input type="number" class="form-control" id="examDuration" placeholder="Enter exam duration">
           </div>
-
-          <div id="optionsContainer">
-            <!-- Options will be dynamically generated here -->
+  
+          <div class="d-flex gap-2">
+            <button type="button" id="submitExamDetailsBtn" class="btn btn-primary">Submit Exam Details</button>
+            <button type="button" id="clearExamDetailsBtn" class="btn btn-secondary">Clear Exam Details</button>
           </div>
-        </div>
-
-        <!-- Short Answer Question -->
-        <div id="shortAnswerQuestion" class="d-none">
+        </form>
+  
+        <hr class="my-4">
+  
+        <h1>Set Questions</h1>
+        <form id="questionsForm">
           <div class="mb-3">
-            <label for="shortAnswerText" class="form-label">Question</label>
-            <textarea class="form-control" id="shortAnswerText" rows="3"></textarea>
+            <label for="questionType" class="form-label">Select Question Type</label>
+            <select class="form-select" id="questionType">
+              <option value="">--Select Question Type--</option>
+              <option value="objective">Objective</option>
+              <option value="short-answer">Short Answer</option>
+            </select>
           </div>
+  
+          <!-- Objective Question Options -->
+          <div id="objectiveQuestion" class="d-none">
+            <div class="mb-3">
+              <label for="questionText" class="form-label">Question</label>
+              <textarea class="form-control" id="questionText" rows="3"></textarea>
+            </div>
+  
+            <div class="mb-3">
+              <label for="optionCount" class="form-label">Number of Options (2-5)</label>
+              <input type="number" class="form-control" id="optionCount" min="2" max="5" value="2">
+            </div>
+  
+            <div id="optionsContainer">
+              <!-- Options will be dynamically generated here -->
+            </div>
+          </div>
+  
+          <!-- Short Answer Question -->
+          <div id="shortAnswerQuestion" class="d-none">
+            <div class="mb-3">
+              <label for="shortAnswerText" class="form-label">Question</label>
+              <textarea class="form-control" id="shortAnswerText" rows="3"></textarea>
+            </div>
+          </div>
+  
+          <div class="d-flex gap-2 mt-4">
+            <button type="button" id="addQuestionBtn" class="btn btn-success">Add Question</button>
+            <button type="button" id="clearQuestionFieldsBtn" class="btn btn-secondary">Clear Question Fields</button>
+            <button type="button" id="setExamBtn" class="btn btn-primary">Set Exam</button>
+          </div>
+        </form>
+  
+        <div class="mt-3">
+          <h5>Questions Added: <span id="questionCount">0</span></h5>
         </div>
-
-        <button type="submit" class="btn btn-primary">Submit</button>
-      </form>
-    </div>
+  
+        <div id="successMessage" class="alert alert-success d-none mt-3" role="alert">
+          Question added successfully!
+        </div>
+      </div>
+    
   </section>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.querySelector('.navbar-toggler').addEventListener('click', function () {
-      const sidebar = document.getElementById('sidebarMenu');
-      sidebar.classList.toggle('show');
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+      // Exam Details Elements
+      const examTitle = document.getElementById('examTitle');
+      const examDuration = document.getElementById('examDuration');
+      const submitExamDetailsBtn = document.getElementById('submitExamDetailsBtn');
+      const clearExamDetailsBtn = document.getElementById('clearExamDetailsBtn');
 
-    const questionType = document.getElementById('questionType');
-    const objectiveQuestion = document.getElementById('objectiveQuestion');
-    const shortAnswerQuestion = document.getElementById('shortAnswerQuestion');
-    const optionCount = document.getElementById('optionCount');
-    const optionsContainer = document.getElementById('optionsContainer');
+      // Question Elements
+      const questionType = document.getElementById('questionType');
+      const objectiveQuestion = document.getElementById('objectiveQuestion');
+      const shortAnswerQuestion = document.getElementById('shortAnswerQuestion');
+      const questionText = document.getElementById('questionText');
+      const optionCount = document.getElementById('optionCount');
+      const optionsContainer = document.getElementById('optionsContainer');
+      const shortAnswerText = document.getElementById('shortAnswerText');
+      const addQuestionBtn = document.getElementById('addQuestionBtn');
+      const clearQuestionFieldsBtn = document.getElementById('clearQuestionFieldsBtn');
+      const setExamBtn = document.getElementById('setExamBtn');
+      const questionCountDisplay = document.getElementById('questionCount');
+      const successMessage = document.getElementById('successMessage');
 
-    // Listen to question type change
-    questionType.addEventListener('change', () => {
-      const selectedType = questionType.value;
+      let questionCount = 0;
 
-      // Toggle visibility of question types
-      objectiveQuestion.classList.toggle('d-none', selectedType !== 'objective');
-      shortAnswerQuestion.classList.toggle('d-none', selectedType !== 'short-answer');
+      // Handle Exam Details Submission
+      submitExamDetailsBtn.addEventListener('click', () => {
+        if (examTitle.value.trim() === '') {
+          alert('Exam title is required!');
+          return;
+        }
+        if (examDuration.value.trim() === '' || isNaN(examDuration.value) || examDuration.value <= 0) {
+          alert('Valid exam duration is required!');
+          return;
+        }
+        alert(`Exam details saved successfully!\nTitle: ${examTitle.value}\nDuration: ${examDuration.value} minutes`);
+      });
 
-      // Trigger generation of options when selecting objective type
-      if (selectedType === 'objective') {
-        optionCount.dispatchEvent(new Event('input'));
-      }
-    });
+      // Clear Exam Details
+      clearExamDetailsBtn.addEventListener('click', () => {
+        examTitle.value = '';
+        examDuration.value = '';
+      });
 
-    // Listen to changes in the number of options
-    optionCount.addEventListener('input', () => {
-      const count = Math.min(Math.max(optionCount.value, 2), 5); // Clamp the value between 2 and 5
-      optionsContainer.innerHTML = '';
+      // Handle Question Type Selection
+      questionType.addEventListener('change', () => {
+        const selectedType = questionType.value;
+        if (selectedType === 'objective') {
+          objectiveQuestion.classList.remove('d-none');
+          shortAnswerQuestion.classList.add('d-none');
+          optionCount.dispatchEvent(new Event('input'));
+        } else if (selectedType === 'short-answer') {
+          shortAnswerQuestion.classList.remove('d-none');
+          objectiveQuestion.classList.add('d-none');
+        } else {
+          objectiveQuestion.classList.add('d-none');
+          shortAnswerQuestion.classList.add('d-none');
+        }
+      });
 
-      // Generate the specified number of options
-      for (let i = 1; i <= count; i++) {
-        const optionDiv = document.createElement('div');
-        optionDiv.className = 'mb-3';
-        optionDiv.innerHTML = `
-          <label for="option${i}" class="form-label">Option ${i}</label>
-          <div class="input-group">
-            <input type="text" class="form-control" id="option${i}" placeholder="Enter option ${i}">
-            <div class="input-group-text">
-              <input type="radio" name="correctOption" value="${i}" aria-label="Correct option">
+      // Dynamically Generate Options
+      optionCount.addEventListener('input', () => {
+        const count = Math.min(Math.max(optionCount.value, 2), 5);
+        optionsContainer.innerHTML = '';
+        for (let i = 1; i <= count; i++) {
+          const optionDiv = document.createElement('div');
+          optionDiv.className = 'mb-3';
+          optionDiv.innerHTML = `
+            <label for="option${i}" class="form-label">Option ${i}</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="option${i}" placeholder="Enter option ${i}">
+              <div class="input-group-text">
+                <input type="radio" name="correctOption" value="${i}" aria-label="Correct option">
+              </div>
             </div>
-          </div>
-        `;
-        optionsContainer.appendChild(optionDiv);
+          `;
+          optionsContainer.appendChild(optionDiv);
+        }
+      });
+
+      // Add Question
+      addQuestionBtn.addEventListener('click', () => {
+        if (!validateQuestionFields()) return;
+
+        questionCount++;
+        questionCountDisplay.textContent = questionCount;
+
+        successMessage.textContent = 'Question added successfully!';
+        successMessage.classList.remove('d-none');
+        setTimeout(() => successMessage.classList.add('d-none'), 3000);
+
+        clearQuestionFields();
+      });
+
+      // Clear Question Fields
+      clearQuestionFieldsBtn.addEventListener('click', () => {
+        clearQuestionFields();
+      });
+
+      // Set Exam
+      setExamBtn.addEventListener('click', () => {
+        if (questionCount === 0) {
+          alert('You must add at least one question before setting the exam.');
+          return;
+        }
+        if (examTitle.value.trim() === '' || examDuration.value.trim() === '') {
+          alert('Please complete the exam details before setting the exam.');
+          return;
+        }
+
+        alert(`Exam has been set successfully!\nTitle: ${examTitle.value}\nDuration: ${examDuration.value} minutes\nQuestions: ${questionCount}`);
+        resetAllFields();
+      });
+
+      // Clear Question Fields Helper
+      function clearQuestionFields() {
+        questionType.value = '';
+        questionText.value = '';
+        shortAnswerText.value = '';
+        optionCount.value = '2';
+        optionsContainer.innerHTML = '';
+        objectiveQuestion.classList.add('d-none');
+        shortAnswerQuestion.classList.add('d-none');
+      }
+
+      // Reset All Fields Helper
+      function resetAllFields() {
+        clearQuestionFields();
+        examTitle.value = '';
+        examDuration.value = '';
+        questionCount = 0;
+        questionCountDisplay.textContent = questionCount;
+      }
+
+      // Validate Question Fields
+      function validateQuestionFields() {
+        if (questionType.value === '') {
+          alert('Select a question type!');
+          return false;
+        }
+        if (questionType.value === 'objective') {
+          if (questionText.value.trim() === '') {
+            alert('Question text is required for objective questions!');
+            return false;
+          }
+          const options = optionsContainer.querySelectorAll('input[type="text"]');
+          for (let option of options) {
+            if (option.value.trim() === '') {
+              alert('All options must be filled for objective questions!');
+              return false;
+            }
+          }
+          const correctOption = optionsContainer.querySelector('input[type="radio"]:checked');
+          if (!correctOption) {
+            alert('Select a correct option for objective questions!');
+            return false;
+          }
+        } else if (questionType.value === 'short-answer') {
+          if (shortAnswerText.value.trim() === '') {
+            alert('Question text is required for short-answer questions!');
+            return false;
+          }
+        }
+        return true;
       }
     });
   </script>
